@@ -68,11 +68,13 @@ class SARSA(object):
         self.policy[s] = {0:"up", 1:"down", 2:"left", 3:"right"}.get(optimal_action)
         self.values[s] = q_list[optimal_action]
         #print(self.policy[s])
+        s_prev = s.split(",")
+        s_current = s_new.split(",")
         s = s_new
         a = a_new
         self.hist.append(copy.copy(self.q_func))
-        return s
-        #return values, policy
+
+        return s, [int(x) for x in s_current], [int(y) for y in s_prev]
             
 def plot_policy(world, pol, values, filename, method_title="Dynamic Programming"):
     max_val = np.max([v for v in values.values()])
@@ -176,15 +178,18 @@ def main():
     dest = "3,2"
     p1_solver = SARSA(world, 0.01, source, dest)
     p2_solver = SARSA(world, 0.01, "1,0", "2,2")
-    p1_state = None
+    s = None
+    cnt = 0
     for _ in range(N_EPISODES):
-        while p1_state != "goal":
-            p1_state, prev_p1s = p1_solver()
-            p2_solver.world.map[p1_state] = 1 # p1 state is an obstacle for p2
-            p2_solver.world.map[prev_p1s] = 0 # clear the old state
-            p2_state, prev_p2s = p2_solver()
-            p1_solver.world.map[p2_state] = 1
-            p1_solver.world.map[prev_p2s] = 0
+        while s != "goal" and cnt < 16:
+            s, p1_state, prev_p1s = p1_solver()
+            print(p1_state, type(p1_state))
+            p2_solver.world.map[p1_state[0], p1_state[1]] = 1 # p1 state is an obstacle for p2
+            p2_solver.world.map[prev_p1s[0], p1_state[1]] = 0 # clear the old state
+            s, p2_state, prev_p2s = p2_solver()
+            p1_solver.world.map[p2_state[0], p2_state[1]] = 1
+            p1_solver.world.map[prev_p2s[0], p2_state[1]] = 0
+            cnt += 1
             
     plot_policy(p1_solver.world, p1_solver.policy, p1_solver.values, "p1sarsa_final.html", "SARSA")
     plot_policy(p2_solver.world, p2_solver.policy, p2_solver.values, "p2sarsa_final.html", "SARSA")
