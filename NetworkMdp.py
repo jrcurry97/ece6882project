@@ -21,6 +21,7 @@ actions = {
 
 TIMEOUT = -1
 
+
 class NetworkMdp:
     def __init__(self, map_file):
         self.nodes = np.loadtxt(open(map_file, "rb"), delimiter=" ")

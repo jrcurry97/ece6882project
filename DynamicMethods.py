@@ -126,8 +126,8 @@ class DynamicMethods:
             nabla = max_diff
             print(nabla)
 
-    def send_packet(self, origin):
-        return self.network.send_packet(origin)
+    def send_packet(self, origin, max_hops=100):
+        return self.network.send_packet(origin, max_hops)
 
 
 def main():
@@ -137,7 +137,7 @@ def main():
 
     # Generate random traffic
     traffic = TrafficGenerator.TrafficGenerator(dp)
-    traffic.simulate(10000, False)
+    traffic.simulate(10000, "Value Iteration", True)
 
 
 if __name__ == '__main__':
