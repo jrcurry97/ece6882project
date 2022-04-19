@@ -169,6 +169,9 @@ def plot_values(world, values, filename):
     save(fig, filename)
     show(fig)
 
+def update_world(world, newobstacle, oldobstacle):
+    world.map[oldobstacle[0], oldobstacle[1]] = 0 # clear the old obstacle
+    world.map[newobstacle[0], newobstacle[1]] = 1 # set the new obstacle
 
 def main():
     # world = GridWorld(ROWS, COLS, goals=GOALS, obs=OBS)
@@ -181,14 +184,11 @@ def main():
     s = None
     cnt = 0
     for _ in range(N_EPISODES):
-        while s != "goal" and cnt < 16:
+        while s != "goal" and cnt < 16: # 16 nodes in 4x4 mesh
             s, p1_state, prev_p1s = p1_solver()
-            print(p1_state, type(p1_state))
-            p2_solver.world.map[p1_state[0], p1_state[1]] = 1 # p1 state is an obstacle for p2
-            p2_solver.world.map[prev_p1s[0], p1_state[1]] = 0 # clear the old state
+            update_world(p2_solver.world, p1_state, prev_p1s)
             s, p2_state, prev_p2s = p2_solver()
-            p1_solver.world.map[p2_state[0], p2_state[1]] = 1
-            p1_solver.world.map[prev_p2s[0], p2_state[1]] = 0
+            update_world(p1_solver.world, p2_state, prev_2s)
             cnt += 1
             
     plot_policy(p1_solver.world, p1_solver.policy, p1_solver.values, "p1sarsa_final.html", "SARSA")
