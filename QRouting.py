@@ -5,15 +5,19 @@ import random
 
 
 class QRouting:
-    def __init__(self, mapfile, epsilon=0.05, alpha=0.9):
+    def __init__(self, mapfile, epsilon=0.05, alpha=0.9, confidence_based=False, clambda=0.9):
         self.network = NetworkMdp.NetworkMdp(mapfile)
 
         # The Q function in this case represents the estimate for the time it takes to route from
         # one node to the destination by taking action a
         self.q = 10000 * np.ones((self.network.nodes.shape[0], self.network.nodes.shape[1], len(NetworkMdp.actions)))
-
+       
         self.epsilon = epsilon
         self.alpha = alpha
+        self.confidence_based = confidence_based
+        self.clambda = clambda
+        if self.confidence_based:
+            self.c = 0.0001 * np.ones((self.network.nodes.shape[0], self.network.nodes.shape[1], len(NetworkMdp.actions)))
 
     def send_packet(self, origin, max_hops=100):
         current_node = origin
@@ -44,7 +48,22 @@ class QRouting:
 
         time = hops
         for node, action in nodes:
+            old_estimate = self.q[node[0]][node[1]][action]
+            
             self.q[node[0]][node[1]][action] = time
+            
+            if self.confidence_based:
+                # update confidence levels
+                if (time > old_estimate):
+                    # decrease confidence, limited to 0.0
+                    self.c[node[0]][node[1]][action] *= 0.9
+                if (time <= old_estimate):
+                    # increase confidence, limited to 1.0
+                    self.c[node[0]][node[1]][action] *= 1.1
+                    if self.c[node[0]][node[1]][action] > 1:
+                        self.c[node[0]][node[1]][action] = 1.0
+                for a in NetworkMdp.actions.keys():
+                    self.c[node[0]][node[1]][a] *= self.clambda # discount factor
             time = time - 1
 
         return hops
@@ -57,7 +76,10 @@ class QRouting:
         best_q = float('inf')
         best_actions = []
         for action in NetworkMdp.actions.keys():
-            q = self.q[node[0]][node[1]][action]
+            if self.confidence_based:
+                q = self.q[node[0]][node[1]][action]*(2-self.c[node[0]][node[1]][action])
+            else:
+                q = self.q[node[0]][node[1]][action]
 
             if q < best_q:
                 best_q = q
@@ -85,10 +107,10 @@ class QRouting:
 
 
 def main():
-    qroute = QRouting("mesh4x4.txt")
+    qroute = QRouting("mesh4x4.txt", confidence_based=True)
 
     traffic = TrafficGenerator.TrafficGenerator(qroute)
-    traffic.simulate(10000, "Q-Routing", True)
+    traffic.simulate(10000, "Confidence Based Q-Routing", True)
 
 
 if __name__ == '__main__':
