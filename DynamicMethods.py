@@ -5,8 +5,8 @@ import TrafficGenerator
 
 class DynamicMethods:
 
-    def __init__(self, mapfile):
-        self.network = NetworkMdp.NetworkMdp(mapfile)
+    def __init__(self, mapfile, topology):
+        self.network = NetworkMdp.NetworkMdp(mapfile, topology)
 
     # Evaluate the chosen policy and update the value function for each state
     def policy_eval(self, discount, theta):
@@ -132,7 +132,7 @@ class DynamicMethods:
 
 def main():
     # Find the optimal policy using value iteration
-    dp = DynamicMethods("mesh4x4.txt")
+    dp = DynamicMethods("mesh4x4.txt", NetworkMdp.TORUS)
     dp.value_iteration(0.9, 0.001)
 
     # Generate random traffic

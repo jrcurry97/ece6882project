@@ -5,8 +5,8 @@ import random
 
 
 class QRouting:
-    def __init__(self, mapfile, epsilon=0.05, alpha=0.9, confidence_based=False, clambda=0.9):
-        self.network = NetworkMdp.NetworkMdp(mapfile)
+    def __init__(self, mapfile, topology, epsilon=0.05, alpha=0.9, confidence_based=False, clambda=0.9):
+        self.network = NetworkMdp.NetworkMdp(mapfile, topology)
 
         # The Q function in this case represents the estimate for the time it takes to route from
         # one node to the destination by taking action a
@@ -107,10 +107,10 @@ class QRouting:
 
 
 def main():
-    qroute = QRouting("mesh4x4.txt", confidence_based=True)
+    qroute = QRouting("mesh4x4.txt", NetworkMdp.TORUS, confidence_based=True)
 
     traffic = TrafficGenerator.TrafficGenerator(qroute)
-    traffic.simulate(10000, "Confidence Based Q-Routing", True)
+    traffic.simulate(10000, "Confidence Q-Routing", False)
 
 
 if __name__ == '__main__':

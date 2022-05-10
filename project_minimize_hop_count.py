@@ -23,12 +23,12 @@ class SARSA(object):
         self.source = source
         self.alpha = alpha
         
-        self.q_func = {s: {"up": len(world.states)/400,
-                      "down": len(world.states)/400,
-                      "left": len(world.states)/400,
-                      "right": len(world.states)/400} for s in world.states}
-        self.policy = {s: np.random.choice(world.actions) for s in world.states}
-        self.values = {s: 0.0 for s in world.states}
+        self.q_func = {s: {"up": len(world.nodes) / 400,
+                      "down": len(world.nodes) / 400,
+                      "left": len(world.nodes) / 400,
+                      "right": len(world.nodes) / 400} for s in world.nodes}
+        self.policy = {s: np.random.choice(world.actions) for s in world.nodes}
+        self.values = {s: 0.0 for s in world.nodes}
         self.q_func["goal"] = {"up": 0, "down": 0, "left": 0, "right": 0}
         
         self.hist = []
@@ -37,10 +37,9 @@ class SARSA(object):
         self.states = []
     
     def __call__(self):
-        s = self.source #np.random.choice(self.world.states) #self.source # P [s0, a0] > 0 for all s in STATES, a in ACTIONS
+        s = self.source
         
         # generate episode using policy
-        #while s != "goal":
         if np.random.random() <= EPSILON: # e-greedy SARSA
             # explore
             a = np.random.choice(self.world.actions)
@@ -75,7 +74,8 @@ class SARSA(object):
         self.hist.append(copy.copy(self.q_func))
 
         return s, [int(x) for x in s_current], [int(y) for y in s_prev]
-            
+
+
 def plot_policy(world, pol, values, filename, method_title="Dynamic Programming"):
     max_val = np.max([v for v in values.values()])
     min_val = np.min([v for v in values.values()])
@@ -105,7 +105,7 @@ def plot_policy(world, pol, values, filename, method_title="Dynamic Programming"
                 color.append("#00FF00")
                 n_feat += 1
 
-    for s in world.states:
+    for s in world.nodes:
         if s == "goal":
             continue
         i, j = [int(v) for v in s.split(",")]
@@ -124,6 +124,7 @@ def plot_policy(world, pol, values, filename, method_title="Dynamic Programming"
      
     save(fig, filename)
     show(fig)
+
 
 def plot_values(world, values, filename):
     max_val = np.max([v for v in values.values()])
@@ -151,7 +152,7 @@ def plot_values(world, values, filename):
                 color.append("#00FF00")
                 n_feat += 1 
 
-    for s in world.states:
+    for s in world.nodes:
         if s == "goal":
             continue
         i, j = [int(v) for v in s.split(",")]

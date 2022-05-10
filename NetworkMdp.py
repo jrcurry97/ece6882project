@@ -12,6 +12,10 @@ LEFT = 1
 UP = 2
 DOWN = 3
 
+# Network topology
+MESH = 0
+TORUS = 1
+
 actions = {
     RIGHT: [0, 1],
     LEFT: [0, -1],
@@ -23,10 +27,12 @@ TIMEOUT = -1
 
 
 class NetworkMdp:
-    def __init__(self, map_file):
+    def __init__(self, map_file, topology):
         self.nodes = np.loadtxt(open(map_file, "rb"), delimiter=" ")
         self.values = np.zeros(self.nodes.shape)
         self.policies = np.random.randint(0, 4, self.nodes.shape)
+        self.topology = topology
+        self.mapfile = map_file
 
     # Plot the network and its policies
     def render(self, method, filename):
@@ -73,9 +79,21 @@ class NetworkMdp:
     # Given a current node and an action taken, return the next node and the given reward
     def next_node(self, current_node, action):
         next_node = (current_node[0] + action[0], current_node[1] + action[1])
-        if not self.in_bounds(next_node):
-            # Can't route off of the network (no node exists here), stay in the current state
-            next_node = current_node
+
+        if self.topology == MESH:
+            if not self.in_bounds(next_node):
+                # Can't route off of the network (no node exists here), stay in the current state
+                next_node = current_node
+        elif self.topology == TORUS:
+            # Torus topology, can wrap around the edges of the network
+            if next_node[0] < 0:
+                next_node = (self.nodes.shape[0] - 1, next_node[1])
+            elif next_node[0] >= self.nodes.shape[0]:
+                next_node = (0, next_node[1])
+            if next_node[1] < 0:
+                next_node = (next_node[0], self.nodes.shape[1] - 1)
+            elif next_node[1] >= self.nodes.shape[1]:
+                next_node = (next_node[0], 0)
 
         if self.node(next_node) == INACTIVE:
             # Can't route to this node (it's inactive), stay in the current state and exit

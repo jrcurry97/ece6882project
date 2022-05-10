@@ -1,4 +1,5 @@
 import NetworkMdp
+import DynamicMethods
 import matplotlib.pyplot as plt
 import random
 import numpy as np
@@ -16,6 +17,10 @@ class TrafficGenerator:
         optimal_percent = []
         optimal_count = 0
 
+        # Use value iteration to find the policy in order to find the optimal distance
+        dp = DynamicMethods.DynamicMethods(self.solver.network.mapfile, self.solver.network.topology)
+        dp.value_iteration(0.9, 0.001)
+
         orig_network = np.copy(self.solver.network.nodes)
         for packet in range(1, packet_count):
             # Randomly choose origin node
@@ -25,7 +30,7 @@ class TrafficGenerator:
             hops = self.solver.send_packet(origin, max_hops)
 
             # Calculate optimal distance
-            distance = abs(destination[0] - origin[0]) + abs(destination[1] - origin[1])
+            distance = dp.send_packet(origin)
 
             # Account for a node sending a packet to itself
             if distance == 0:

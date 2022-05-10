@@ -5,8 +5,8 @@ import random
 
 
 class Sarsa:
-    def __init__(self, mapfile, epsilon=0.05, alpha=0.9, gamma=0.9):
-        self.network = NetworkMdp.NetworkMdp(mapfile)
+    def __init__(self, mapfile, topology, epsilon=0.05, alpha=0.9, gamma=0.9):
+        self.network = NetworkMdp.NetworkMdp(mapfile, topology)
         self.q = np.zeros((self.network.nodes.shape[0], self.network.nodes.shape[1], len(NetworkMdp.actions)))
         self.epsilon = epsilon
         self.alpha = alpha
@@ -64,10 +64,10 @@ class Sarsa:
 
 
 def main():
-    sarsa = Sarsa("mesh4x4.txt")
+    sarsa = Sarsa("mesh4x4.txt", NetworkMdp.TORUS)
 
     traffic = TrafficGenerator.TrafficGenerator(sarsa)
-    traffic.simulate(10000, "SARSA", True)
+    traffic.simulate(10000, "SARSA", False)
 
 
 if __name__ == '__main__':
